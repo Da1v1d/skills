@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Commit Conventions"
+  short_description: "Draft and safely create conventional commits"
+  default_prompt: "Use $git-commit-conventions to prepare a commit for my staged changes."
