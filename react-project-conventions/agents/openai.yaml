@@ -1,0 +1,4 @@
+interface:
+  display_name: "React Project Conventions"
+  short_description: "Apply consistent React project conventions"
+  default_prompt: "Use $react-project-conventions when implementing changes in this React project."
