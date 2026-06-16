@@ -116,7 +116,7 @@ Use this folder for:
 - screen-level state logic
 
 ```txt
-src/features/auth/model/hooks/useLogin.ts
+src/features/auth/model/hooks/use-login.ts
 src/features/auth/model/stores/auth.store.ts
 src/features/onboarding/model/context/onboarding.context.tsx
 ```
@@ -182,50 +182,49 @@ Accept singular names only when the existing repository already uses them consis
 
 ```txt
 src/features/auth/lib/validation.ts
-src/features/accounts/model/hooks/useAccounts.ts
-src/features/onboarding/ui/StepIndicator.tsx
+src/features/accounts/model/hooks/use-accounts.ts
+src/features/onboarding/ui/step-indicator.tsx
 ```
 
 ### Move To Shared When Two Or More Features Use It
 
 ```txt
-src/shared/components/Button.tsx
-src/shared/hooks/useDebounce.ts
-src/shared/utils/formatDate.ts
+src/shared/components/button.tsx
+src/shared/hooks/use-debounce.ts
+src/shared/utils/format-date.ts
 src/shared/types/api.ts
 ```
 
 ## Imports
 
-Prefer stable public import paths when aliases are configured.
+Use aliases for project imports.
+
+Project code under `src/` must be imported through the configured alias, usually `@/`.
 
 Good:
 
 ```ts
-import LoginForm from "@/features/auth/ui/LoginForm";
-import Button from "@/shared/components/Button";
-import { formatDate } from "@/shared/utils/formatDate";
+import LoginForm from "@/features/auth/ui/login-form";
+import Button from "@/shared/components/button";
+import { validateLoginForm } from "@/features/auth/lib/validation";
+import { formatDate } from "@/shared/utils/format-date";
 ```
 
-Avoid long relative imports across slices.
+Do not use relative imports for project files, even when the relative path is short.
 
 Bad:
 
 ```ts
-import Button from "../../../../shared/components/Button";
-```
-
-Relative imports are acceptable only for files inside the same local module or folder.
-
-Good:
-
-```ts
+import Button from "../../../../shared/components/button";
 import { validateLoginForm } from "../lib/validation";
+import { formatDate } from "../../shared/utils/format-date";
 ```
+
+Relative imports are allowed only for package-local files outside the app source tree, such as test fixtures or config files, when no alias is configured for that area.
 
 ## Components
 
-Use `const` declarations for components.
+Always use arrow functions assigned to `const` for components.
 
 Good:
 
@@ -241,7 +240,7 @@ const LoginScreen = ({ title }: LoginScreenProps) => {
 export default LoginScreen;
 ```
 
-Avoid function declarations for components unless there is a strong reason.
+Do not use function declarations for components.
 
 Bad:
 
@@ -252,6 +251,34 @@ export default function LoginScreen() {
 ```
 
 Use `export default` for screen and component files.
+
+## Functions
+
+Prefer arrow functions assigned to `const` instead of function declarations for project code.
+
+Good:
+
+```ts
+const formatUserName = (firstName: string, lastName: string) => {
+  return `${firstName} ${lastName}`;
+};
+
+const useAccounts = () => {
+  return useQuery(accountsQueryOptions());
+};
+```
+
+Bad:
+
+```ts
+function formatUserName(firstName: string, lastName: string) {
+  return `${firstName} ${lastName}`;
+}
+
+function useAccounts() {
+  return useQuery(accountsQueryOptions());
+}
+```
 
 ## Handlers
 
@@ -357,7 +384,8 @@ Examples:
 ```txt
 src/features/auth/model/stores/auth.store.ts
 src/features/onboarding/model/context/onboarding.context.tsx
-src/processes/providers/AppProviders.tsx
+src/processes/providers/app-provider.tsx
+src/processes/providers/ui-provider.tsx
 ```
 
 ## API Layer
@@ -377,7 +405,7 @@ src/features/<feature>/api
 Good:
 
 ```txt
-src/shared/services/httpClient.ts
+src/shared/services/http-client.ts
 src/features/auth/api/auth.api.ts
 src/features/accounts/api/accounts.api.ts
 ```
@@ -398,16 +426,40 @@ Feature-specific assets may stay inside a feature only if they are strongly tied
 
 ## File Naming
 
-Use clear, descriptive file names.
+Use clear, descriptive kebab-case file and folder names.
+
+Use `-` between words. Do not use camelCase or PascalCase for file or folder names.
+
+Good:
+
+```txt
+use-login.tsx
+login-screen.tsx
+account-settings-form.tsx
+keyboard-insets.ts
+http-client.ts
+```
+
+Bad:
+
+```txt
+useLogin.tsx
+LoginScreen.tsx
+AccountSettingsForm.tsx
+keyboardInsets.ts
+httpClient.ts
+```
+
+This rule applies to filenames and directory names. TypeScript identifiers should still use the normal language conventions, such as `LoginScreen`, `useLogin`, and `formatDate`.
 
 Recommended:
 
 ```txt
-LoginScreen.tsx
-LoginForm.tsx
+login-screen.tsx
+login-form.tsx
 auth.api.ts
 auth.store.ts
-useLogin.ts
+use-login.ts
 validation.ts or schemas.ts
 types.ts
 utils.ts
@@ -470,6 +522,7 @@ Prefer:
 - readable names
 - colocated feature logic
 - simple composition
+- arrow functions assigned to `const`
 - explicit types where useful
 - platform-specific files when platform behavior differs
 
@@ -481,6 +534,7 @@ Avoid:
 - cross-feature imports between unrelated features
 - inline styles for static styling
 - platform-wrong UI libraries
+- function declarations for project code
 
 ## Default Decision Rule
 
