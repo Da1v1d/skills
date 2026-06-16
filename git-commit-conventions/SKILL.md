@@ -1,6 +1,7 @@
 ---
 name: git-commit-conventions
 description: Git commit message format and safe commit workflow. Use when creating, amending, or drafting Git commits and Conventional Commit messages.
+model: Haiku
 ---
 
 # Git commit conventions
@@ -9,7 +10,6 @@ Use this rule when the user asks to commit, amend, or write commit messages.
 
 ## When to commit
 
-- **Only create commits when the user explicitly asks.** If unclear, ask first.
 - **Always prefer one line commits** If big feature was implemented, then multiple
 - **Always confirm before committing.** After staging and drafting the message, show the user what will be committed and the proposed message, then **wait for explicit approval** (e.g. “yes”, “go ahead”, “commit”) before running `git commit`. Do not commit in the same turn as the proposal unless the user already approved that exact message and file set.
 - Do not commit secrets (`.env`, credentials, keys). Warn if the user tries to include them.

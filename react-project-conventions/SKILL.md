@@ -1,9 +1,20 @@
 ---
 name: react-project-conventions
-description: Core project conventions for React web and React Native or Expo projects. Use when creating, editing, reviewing, or organizing React projects that should follow the documented architecture, naming, styling, TypeScript, and Bun conventions.
+description: Core project conventions for React, React Native or Expo, Next.js, and TanStack Start projects. Use when creating, editing, reviewing, or organizing React projects that should follow the documented architecture, naming, styling, TypeScript, and Bun conventions.
 ---
 
 # React Project Conventions
+
+## How To Use This Skill
+
+Apply the shared conventions in this file to every React-family project, then read the stack reference that matches the repository:
+
+- React SPA or Vite: `references/react.md`
+- React Native or Expo: `references/react-native.md`
+- Next.js: `references/next-js.md`
+- TanStack Start: `references/tanstack-start.md`
+
+If a project mixes stacks, read each relevant reference and prefer the more specific stack rule when there is overlap.
 
 ## Package Manager / Runtime
 
@@ -12,36 +23,8 @@ Use **Bun** for this project.
 - Run scripts with `bun run`
   - Example: `bun run start`
   - Example: `bun run build`
-
 - Install dependencies with `bun install`
 - Prefer `bun` over `npm` or `yarn` in commands, scripts, examples, and documentation.
-
-## Stack
-
-This convention file applies to both **React web** and **React Native / Expo** projects.
-
-### React Web
-
-- React
-- TypeScript
-- Vite / Next.js when applicable
-- Tailwind CSS / project styling system
-- Browser-native APIs and project shared UI
-
-### React Native / Expo
-
-- React Native
-- Expo
-- Expo Router when applicable
-- TypeScript
-- Uniwind / Tailwind
-- React Native and Expo primitives
-- Shared app components from `src/shared/components`
-
-Do not use platform-wrong UI kits.
-
-- In React Native, do not use web UI kits such as MUI, Ant Design Web, Chakra UI, or browser-only components.
-- In React web, do not use React Native-only primitives unless the project is explicitly configured for React Native Web.
 
 ## Architecture
 
@@ -69,43 +52,6 @@ The main rule:
 | `src/assets/images/`       | Static images                                                                         |
 | `src/assets/icons/`        | Static icons                                                                          |
 | `src/assets/videos/`       | Static videos                                                                         |
-
-## Routing
-
-Use `src/app/` for route-level files.
-
-### React Web
-
-For Next.js:
-
-```txt
-src/app/
-  layout.tsx
-  page.tsx
-  dashboard/
-    page.tsx
-```
-
-For Vite / React Router:
-
-```txt
-src/app/
-  router.tsx
-  providers.tsx
-  routes/
-```
-
-### React Native / Expo
-
-For Expo Router:
-
-```txt
-src/app/
-  _layout.tsx
-  index.tsx
-  (tabs)/
-  (auth)/
-```
 
 Route files should mainly compose features and screens. Avoid putting large business logic directly inside route files.
 
@@ -203,7 +149,7 @@ Use this folder for:
 ```txt
 src/features/accounts/lib/accounts.types.ts
 src/features/accounts/lib/accounts.utils.ts
-src/features/auth/lib/accounts.validation.ts
+src/features/auth/lib/auth.validation.ts
 ```
 
 ### `config/`
@@ -232,7 +178,7 @@ Accept singular names only when the existing repository already uses them consis
 
 ## Placement Rules
 
-### Keep inside a feature when only one feature uses it
+### Keep Inside A Feature When Only One Feature Uses It
 
 ```txt
 src/features/auth/lib/validation.ts
@@ -240,7 +186,7 @@ src/features/accounts/model/hooks/useAccounts.ts
 src/features/onboarding/ui/StepIndicator.tsx
 ```
 
-### Move to shared when two or more features use it
+### Move To Shared When Two Or More Features Use It
 
 ```txt
 src/shared/components/Button.tsx
@@ -330,69 +276,6 @@ const click = () => {};
 
 Use descriptive names for variables, functions, and handlers.
 
-## Styling
-
-Use the project styling system consistently.
-
-### React Web
-
-Prefer Tailwind CSS or the project-approved styling approach.
-
-Good:
-
-```tsx
-<div className="flex min-h-screen bg-white px-4">
-  <h1 className="text-lg font-semibold text-black">Title</h1>
-</div>
-```
-
-Avoid mixing multiple styling systems without a clear project reason.
-
-### React Native / Expo
-
-Use **Uniwind / Tailwind classes** for styling.
-
-Good:
-
-```tsx
-<View className="flex-1 bg-white px-4">
-  <Text className="text-lg font-semibold text-black">Title</Text>
-</View>
-```
-
-Avoid inline styles unless required for dynamic runtime values.
-
-Acceptable:
-
-```tsx
-<View style={{ width: progressWidth }} />
-```
-
-Bad:
-
-```tsx
-<View style={{ flex: 1, backgroundColor: "white", paddingHorizontal: 16 }} />
-```
-
-Prefer extracting repeated class groups into reusable components rather than duplicating large class strings.
-
-## Platform-Specific Code
-
-Keep platform-specific code explicit.
-
-Recommended naming:
-
-```txt
-button.web.tsx
-button.native.tsx
-use-keyboard-insets.native.ts
-use-viewport-size.web.ts
-```
-
-Use platform-specific files when behavior or UI differs between React web and React Native.
-
-Avoid hiding large platform differences inside one messy component.
-
 ## TypeScript
 
 Use TypeScript everywhere.
@@ -400,7 +283,12 @@ Use TypeScript everywhere.
 Prefer explicit types for:
 
 - component props
-  Good:
+- API responses
+- store state
+- public utility function arguments
+- shared reusable modules
+
+Good:
 
 ```ts
 type Props = {
@@ -412,24 +300,15 @@ export type LoginFormProps = {
   isLoading: boolean;
   onSubmit: (values: LoginFormValues) => void;
 };
-```
-
-- API responses
-- store state
-- public utility function arguments
-- shared reusable modules
-  Good:
-
-```ts
 
 type User = {
   name: string;
   surname: string;
 };
 
-type AdminUser = User && {
-  IsAdmin: true;
-}
+type AdminUser = User & {
+  isAdmin: true;
+};
 ```
 
 Avoid `any`.
@@ -477,7 +356,7 @@ Examples:
 
 ```txt
 src/features/auth/model/stores/auth.store.ts
-src/features/onboarding/model/context/onboardin-context.tsx
+src/features/onboarding/model/context/onboarding.context.tsx
 src/processes/providers/AppProviders.tsx
 ```
 
@@ -610,4 +489,4 @@ When unsure where to place code:
 1. Start inside the feature.
 2. Keep it close to where it is used.
 3. Move it to `shared/` only after real reuse appears.
-4. Keep `shared/` clean, generic, and feature-independent no business logic.
+4. Keep `shared/` clean, generic, and feature-independent.
