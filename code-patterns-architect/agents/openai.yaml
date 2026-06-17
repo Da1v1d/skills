@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Patterns Architect"
+  short_description: "Design and review JavaScript and TypeScript code patterns."
+  default_prompt: "Use this skill to design, review, refactor, or explain JavaScript and TypeScript code architecture, API design, type modeling, async patterns, module boundaries, and maintainability tradeoffs."
