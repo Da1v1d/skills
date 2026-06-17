@@ -26,6 +26,8 @@ src/app/
 
 Route files should mainly compose features and screens. Keep data access, validation, and feature state inside the feature slice.
 
+Use `src/features/<feature>/ui/screens/` for feature screen-level views in React Native / Expo projects.
+
 ## UI
 
 Use React Native and Expo primitives.

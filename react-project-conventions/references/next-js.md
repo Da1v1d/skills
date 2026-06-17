@@ -28,6 +28,8 @@ src/app/
 
 Route files should compose feature UI and route-level data loading. Keep reusable feature logic inside `src/features/<feature>/`.
 
+Use `src/features/<feature>/ui/pages/` for feature page-level views that are composed by Next.js route files.
+
 ## Server And Client Components
 
 Prefer Server Components by default.

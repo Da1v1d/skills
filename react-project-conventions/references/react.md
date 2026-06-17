@@ -32,6 +32,8 @@ Use web primitives and project-approved web UI components.
 
 Do not use React Native-only primitives unless the project is explicitly configured for React Native Web.
 
+Use `src/features/<feature>/ui/pages/` for feature page-level views in React web projects.
+
 Good:
 
 ```tsx

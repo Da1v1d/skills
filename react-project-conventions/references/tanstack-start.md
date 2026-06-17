@@ -36,6 +36,8 @@ Follow the existing project route location. Do not move an established TanStack 
 
 Route files should compose features, loaders, and route metadata. Keep reusable feature logic inside `src/features/<feature>/`.
 
+Use `src/features/<feature>/ui/pages/` for feature page-level views that are composed by TanStack Start route files.
+
 ## Loaders And Server Functions
 
 Keep route loaders thin.

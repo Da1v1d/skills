@@ -53,7 +53,7 @@ The main rule:
 | `src/assets/icons/`        | Static icons                                                                          |
 | `src/assets/videos/`       | Static videos                                                                         |
 
-Route files should mainly compose features and screens. Avoid putting large business logic directly inside route files.
+Route files should mainly compose feature pages or screens. Avoid putting large business logic directly inside route files.
 
 Good:
 
@@ -87,6 +87,10 @@ src/features/<feature>/
     hooks/
     stores/
   ui/
+    pages/ or screens/
+    wrappers/
+    blocks/
+    elements/
 ```
 
 ## Feature Segments
@@ -97,10 +101,22 @@ Feature-specific components.
 
 Use this folder for components used only by this feature.
 
+Organize feature UI by composition level:
+
+- `pages/` for React web, Next.js, and TanStack Start page-level feature views
+- `screens/` for React Native / Expo screen-level feature views
+- `wrappers/` for feature-specific layout shells, providers, guards, and composition wrappers
+- `blocks/` for larger feature sections composed from elements and shared components
+- `elements/` for small feature-only UI pieces
+
+Use either `pages/` or `screens/` based on the stack. Do not use both unless the same feature is intentionally shared across web and native.
+
 ```txt
-src/features/auth/ui/login-form.tsx
-src/features/onboarding/ui/onboarding-step.tsx
-src/features/accounts/ui/accounts-list.tsx
+src/features/auth/ui/pages/login-page.tsx
+src/features/auth/ui/screens/login-screen.tsx
+src/features/auth/ui/wrappers/auth-form-wrapper.tsx
+src/features/onboarding/ui/blocks/onboarding-step.tsx
+src/features/accounts/ui/elements/account-row.tsx
 ```
 
 ### `model/`
@@ -183,7 +199,7 @@ Accept singular names only when the existing repository already uses them consis
 ```txt
 src/features/auth/lib/validation.ts
 src/features/accounts/model/hooks/use-accounts.ts
-src/features/onboarding/ui/step-indicator.tsx
+src/features/onboarding/ui/elements/step-indicator.tsx
 ```
 
 ### Move To Shared When Two Or More Features Use It
