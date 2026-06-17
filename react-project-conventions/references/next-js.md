@@ -46,13 +46,13 @@ Keep client components small and push non-interactive rendering back to server c
 Good:
 
 ```tsx
-import LoginForm from "@/features/auth/ui/login-form";
+import LoginPage from "@/features/auth/ui/pages/login-page";
 
-const LoginPage = () => {
-  return <LoginForm />;
+const Page = () => {
+  return <LoginPage />;
 };
 
-export default LoginPage;
+export default Page;
 ```
 
 ## API And Server Logic

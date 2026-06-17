@@ -58,13 +58,13 @@ Route files should mainly compose feature pages or screens. Avoid putting large 
 Good:
 
 ```tsx
-import LoginForm from "@/features/auth/ui/login-form";
+import LoginScreen from "@/features/auth/ui/screens/login-screen";
 
-const LoginScreen = () => {
-  return <LoginForm />;
+const LoginRoute = () => {
+  return <LoginScreen />;
 };
 
-export default LoginScreen;
+export default LoginRoute;
 ```
 
 ## Feature Slice Structure
@@ -88,6 +88,7 @@ src/features/<feature>/
     stores/
   ui/
     pages/ or screens/
+    forms/
     wrappers/
     blocks/
     elements/
@@ -105,6 +106,7 @@ Organize feature UI by composition level:
 
 - `pages/` for React web, Next.js, and TanStack Start page-level feature views
 - `screens/` for React Native / Expo screen-level feature views
+- `forms/` for feature-specific form components, field groups, and validation UI
 - `wrappers/` for feature-specific layout shells, providers, guards, and composition wrappers
 - `blocks/` for larger feature sections composed from elements and shared components
 - `elements/` for small feature-only UI pieces
@@ -114,6 +116,7 @@ Use either `pages/` or `screens/` based on the stack. Do not use both unless the
 ```txt
 src/features/auth/ui/pages/login-page.tsx
 src/features/auth/ui/screens/login-screen.tsx
+src/features/auth/ui/forms/login-form.tsx
 src/features/auth/ui/wrappers/auth-form-wrapper.tsx
 src/features/onboarding/ui/blocks/onboarding-step.tsx
 src/features/accounts/ui/elements/account-row.tsx
@@ -220,7 +223,7 @@ Project code under `src/` must be imported through the configured alias, usually
 Good:
 
 ```ts
-import LoginForm from "@/features/auth/ui/login-form";
+import LoginForm from "@/features/auth/ui/forms/login-form";
 import Button from "@/shared/components/button";
 import { validateLoginForm } from "@/features/auth/lib/validation";
 import { formatDate } from "@/shared/utils/format-date";

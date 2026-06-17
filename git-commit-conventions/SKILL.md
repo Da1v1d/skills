@@ -10,8 +10,8 @@ Use this rule when the user asks to commit, amend, or write commit messages.
 
 ## When to commit
 
-- **Always prefer one line commits** If big feature was implemented, then multiple
-- **Always confirm before committing.** After staging and drafting the message, show the user what will be committed and the proposed message, then **wait for explicit approval** (e.g. “yes”, “go ahead”, “commit”) before running `git commit`. Do not commit in the same turn as the proposal unless the user already approved that exact message and file set.
+- Prefer one-line commit messages. Use a body only for large or non-obvious changes.
+- Draft commit messages and commit commands only. The user is responsible for staging and running commits.
 - Do not commit secrets (`.env`, credentials, keys). Warn if the user tries to include them.
 - Do not create empty commits when there are no changes.
 
@@ -57,12 +57,12 @@ Match recent repo style when present (`git log -10 --oneline`).
 ## Workflow before committing
 
 1. Run in parallel: `git status`, `git diff` (staged + unstaged), `git log -10 --oneline`.
-2. Stage only relevant files; draft message from **all** staged changes.
-3. **Confirm with the user** — post a short summary:
+2. Identify staged files. If nothing is staged, identify relevant unstaged files and draft from the intended change set without staging anything.
+3. Post a short summary:
    - Proposed commit message (subject + body if any)
-   - Files to be committed (paths from `git status` / staged diff)
-   - Ask: “Proceed with this commit?” and **stop** until they approve.
-4. Only after approval, commit with a HEREDOC (no `-i` flags):
+   - Files that appear relevant or are already staged
+   - Any secrets, generated files, or unrelated changes the user should exclude
+4. If the user asks for a command, provide a copyable command for the user to run. Do not run it yourself.
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -74,17 +74,17 @@ EOF
 )"
 ```
 
-5. Run `git status` after commit to confirm success.
+5. If the user reports a hook failure, help fix the issue and draft a new commit message or command.
 
 ## Safety (do not skip)
 
-- Never add and run `git commit` or `git add` by yourself, it's only my responsibility
+- Never run `git add` or `git commit`; staging and committing are only the user's responsibility.
 - Never update git config; never `--no-verify` unless the user asks.
 - **Never push.** The user pushes to remotes manually. Do not run `git push`, `git push -u`, or publish branches unless the user explicitly asks in that conversation.
 - Never force-push to `main`/`master` (or any branch) without explicit request and a clear warning about rewriting remote history.
-- **Amend** only when: user asked for amend, OR hook auto-modified files after a successful commit you made, HEAD is yours and unpushed.
-- If commit **failed** or was **rejected by a hook**, fix and make a **new** commit — do not amend.
+- Draft amend messages only when the user asks for amend.
+- If commit **failed** or was **rejected by a hook**, fix and draft a **new** commit message — do not suggest amend unless the user explicitly asks.
 
 ## Pre-commit hook failures
 
-Fix the reported issue, re-stage if needed, then commit again with a **new** commit (not amend unless amend rules above apply).
+Fix the reported issue, tell the user what to re-stage if needed, then draft a **new** commit message or command. Do not suggest amend unless the user explicitly asks.
