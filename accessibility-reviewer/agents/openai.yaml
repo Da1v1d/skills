@@ -1,0 +1,4 @@
+interface:
+  display_name: "Accessibility Reviewer"
+  short_description: "Review and fix app accessibility"
+  default_prompt: "Use $accessibility-reviewer to audit this UI and provide concrete fixes."
