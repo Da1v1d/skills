@@ -1,7 +1,6 @@
 ---
 name: git-commit-conventions
 description: Git commit message format and safe commit workflow. Use when creating, amending, or drafting Git commits and Conventional Commit messages.
-model: Haiku
 ---
 
 # Git commit conventions

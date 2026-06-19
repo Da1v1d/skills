@@ -301,22 +301,56 @@ function useAccounts() {
 
 ## Handlers
 
-Event handlers must use the `handler` suffix.
+Use `on...` names for parent/main callbacks and prop-facing functions that are
+passed into components.
 
 Good:
 
 ```tsx
-const pressHandler = () => {};
-const submitHandler = () => {};
-const closeModalHandler = () => {};
-const changeTextHandler = (value: string) => {};
+const onPress = () => {};
+const onSubmit = () => {};
+const onCloseModal = () => {};
+const onChangeText = (value: string) => {};
+
+type Props = {
+  onPress: () => void;
+  onChangeText: (value: string) => void;
+};
+```
+
+Inside child components, when a local function wraps a callback or adds
+component-specific logic, use a descriptive `handler` suffix and call the
+`on...` callback from there.
+
+Good:
+
+```tsx
+type Props = {
+  onPress: () => void;
+  onChangeText: (value: string) => void;
+};
+
+const InnerButton = ({ onPress, onChangeText }: Props) => {
+  const pressHandler = () => {
+    onPress();
+  };
+
+  const changeTextHandler = (value: string) => {
+    onChangeText(value);
+  };
+
+  return null;
+};
 ```
 
 Bad:
 
 ```tsx
 const handlePress = () => {};
-const onSubmit = () => {};
+const onSubmit = () => {
+  validateForm();
+  props.onSubmit();
+};
 const click = () => {};
 ```
 
