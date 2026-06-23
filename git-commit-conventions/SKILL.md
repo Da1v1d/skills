@@ -61,19 +61,7 @@ Match recent repo style when present (`git log -10 --oneline`).
    - Proposed commit message (subject + body if any)
    - Files that appear relevant or are already staged
    - Any secrets, generated files, or unrelated changes the user should exclude
-4. If the user asks for a command, provide a copyable command for the user to run. Do not run it yourself.
-
-```bash
-git commit -m "$(cat <<'EOF'
-feat(scope): short summary
-
-Optional body explaining why.
-
-EOF
-)"
-```
-
-5. If the user reports a hook failure, help fix the issue and draft a new commit message or command.
+4. If the user reports a hook failure, help fix the issue and draft a new commit message or command.
 
 ## Safety (do not skip)
 

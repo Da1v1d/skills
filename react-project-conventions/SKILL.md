@@ -173,11 +173,12 @@ src/features/auth/lib/auth.validation.ts
 
 ### `config/`
 
-Feature-specific constants, configs, or feature flags.
+Feature-specific constants, configs, feature flags, or permission definitions.
 
 ```txt
 src/features/onboarding/config/onboarding.configs.ts
 src/features/auth/config/auth.constants.ts
+src/features/accounts/config/accounts.permissions.tsx
 ```
 
 ## Feature Naming
