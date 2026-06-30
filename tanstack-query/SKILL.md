@@ -18,45 +18,6 @@ Apply the shared conventions in this file (setup, query keys, the API layer, and
 - Reading server state (queries, suspense, pagination, infinite, prefetching, SSR): `references/queries.md`
 - Writing server state (mutations, optimistic updates, invalidation, cache writes): `references/mutations.md`
 
-This skill pairs with `react-project-conventions`. Place query/mutation code following that skill's feature-slice structure (see [API Layer](#api-layer) below).
-
-## Installation
-
-```bash
-bun add @tanstack/react-query
-bun add -D @tanstack/react-query-devtools  # Optional
-```
-
-## Setup
-
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60, // 1 minute
-      gcTime: 1000 * 60 * 5, // 5 minutes (garbage collection)
-      retry: 3,
-      refetchOnWindowFocus: true,
-      refetchOnReconnect: true,
-    },
-  },
-});
-
-const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <YourApp />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  );
-};
-```
-
-The provider belongs in app-wide wiring — in processes, or project general shared domain
-
 ## API Layer
 
 **Never call `fetch` inline inside a `queryFn` or `mutationFn`.** Inline `fetch("/api/todos")` duplicates base URL, headers, error handling, and JSON parsing across every hook, and couples your cache layer to transport details. Instead, point query/mutation functions at named request functions (`getTodos`, `getTodo`, `createTodo`, or semi `TodosApi.getAll`, `TodosApi.getById`, `TodosApi.create` depends on project architecture/structure, just remember that you need to keep project conventions) defined in your project's API layer.
@@ -75,9 +36,7 @@ useQuery({
 useMutation({ mutationFn: createTodo });
 ```
 
-Throughout `references/queries.md` and `references/mutations.md`, `getTodos`, `getTodo`, `createTodo`, etc. refer to these existing request functions. Reads forward the `signal` (`getTodos(signal)`) so TanStack Query can cancel them.
-
-Throughout `references/queries.md` and `references/mutations.md`, `getTodos`, `getTodo`, `createTodo`, etc. always refer to these feature API functions.
+Throughout `references/queries.md` and `references/mutations.md`, `getTodos`, `getTodo`, `createTodo`, etc. always refer to these feature API request functions. Reads forward the `signal` (`getTodos(signal)`) so TanStack Query can cancel them.
 
 ## Core Concepts
 
@@ -85,17 +44,20 @@ Throughout `references/queries.md` and `references/mutations.md`, `getTodos`, `g
 
 Query keys uniquely identify cached data. They must be serializable arrays:
 
+Keys are serializable arrays, defined once as constants (see the next section) and referenced everywhere — never as inline string literals. The comment after each line shows the shape the constant resolves to:
+
 ```tsx
-// Simple key
-useQuery({ queryKey: ["todos"], queryFn: ({ signal }) => getTodos(signal) });
+// Simple key → ["todos"]
+useQuery({ queryKey: TODOS_KEY, queryFn: ({ signal }) => getTodos(signal) });
 
-// With variables (dependency array pattern)
-useQuery({ queryKey: ["todos", { status, page }], queryFn: getTodos });
+// With variables (dependency array pattern) → ["todos", { status, page }]
+useQuery({ queryKey: todoListKey({ status, page }), queryFn: getTodos });
 
-// Hierarchical keys for invalidation
-useQuery({ queryKey: ["todos", todoId], queryFn: () => getTodo(todoId) });
+// Hierarchical keys for invalidation → ["todos", todoId]
+useQuery({ queryKey: todoKey(todoId), queryFn: () => getTodo(todoId) });
+// → ["todos", todoId, "comments"]
 useQuery({
-  queryKey: ["todos", todoId, "comments"],
+  queryKey: todoCommentsKey(todoId),
   queryFn: () => getTodoComments(todoId),
 });
 
@@ -142,31 +104,7 @@ The `as const` assertions preserve literal tuple types for full inference, and c
 
 ### queryOptions Helper
 
-Create reusable, type-safe query configurations. Colocate these with the feature, typically in `src/features/<feature>/api/` next to the request functions:
-
-```tsx
-import { queryOptions } from "@tanstack/react-query";
-import { getTodos, getTodo } from "@/features/todos/api/todos.api";
-import { TODOS_KEY, todoKey } from "@/features/todos/config/todos.constants";
-
-export const todosQueryOptions = queryOptions({
-  queryKey: TODOS_KEY,
-  queryFn: ({ signal }) => getTodos(signal),
-  staleTime: 5000,
-});
-
-export const todoQueryOptions = (todoId: string) =>
-  queryOptions({
-    queryKey: todoKey(todoId),
-    queryFn: ({ signal }) => getTodo(todoId, signal),
-    enabled: !!todoId,
-  });
-
-// Usage
-const { data } = useQuery(todosQueryOptions);
-const { data } = useSuspenseQuery(todoQueryOptions(id));
-await queryClient.prefetchQuery(todosQueryOptions);
-```
+Wrap each query's key, `queryFn`, and options in a `queryOptions` factory, colocated with the feature's request functions in `src/features/<feature>/api/`. This yields one reusable, fully-typed config shared across `useQuery`, `useSuspenseQuery`, `prefetchQuery`, and `ensureQueryData`. See [Query Options Pattern](references/queries.md#query-options-pattern-recommended) in the queries reference for the full example.
 
 ## Best Practices
 

@@ -54,7 +54,7 @@ export const Route = createFileRoute("/accounts")({
 Put feature query options, mutations, and server functions inside the feature when they are feature-specific:
 
 ```txt
-src/features/accounts/api/accounts.api.ts
+src/features/accounts/api/accounts.service.ts
 src/features/accounts/model/queries/accounts.queries.ts
 src/features/accounts/model/actions/create-account.action.ts
 ```

@@ -147,8 +147,8 @@ Feature API modules.
 Use this folder when a feature calls backend endpoints. Feature API modules should compose shared infrastructure from `src/shared/services`.
 
 ```txt
-src/features/accounts/api/accounts.api.ts
-src/features/auth/api/auth.api.ts
+src/features/accounts/api/accounts.service.ts
+src/features/auth/api/auth.service.ts
 ```
 
 Do not create duplicate raw HTTP clients inside features if a shared client already exists.
@@ -460,11 +460,51 @@ Good:
 
 ```txt
 src/shared/services/http-client.ts
-src/features/auth/api/auth.api.ts
-src/features/accounts/api/accounts.api.ts
+src/features/auth/api/auth.service.ts
+src/features/accounts/api/accounts.service.ts
 ```
 
 Feature APIs should not duplicate base request logic.
+
+Good:
+
+```ts
+// src/shared/services/http-client.ts
+export class httpClient extends ApiRequestService {
+  constructor() {
+    super();
+  }
+}
+
+// src/features/accounts/api/accounts.service.ts
+import { httpClient } from "@/shared/services/http-client";
+
+export class AccountsService {
+  public static getAll() {
+    return httpClient.get<Account[]>("/accounts").then((res) => res.data);
+  }
+
+  public static getById(id: string) {
+    return httpClient.get<Account>(`/accounts/${id}`).then((res) => res.data);
+  }
+}
+```
+
+Bad:
+
+```ts
+// src/features/accounts/api/accounts.service.ts
+// Re-creates base URL and headers that already live in the shared client.
+export class AccountsService {
+  public static getAll() {
+    return axios
+      .get<Account[]>(`${import.meta.env.VITE_API_URL}/accounts`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      .then((res) => res.data);
+  }
+}
+```
 
 ## Assets
 
@@ -511,7 +551,7 @@ Recommended:
 ```txt
 login-screen.tsx
 login-form.tsx
-auth.api.ts
+auth.service.ts
 auth.store.ts
 use-login.ts
 validation.ts or schemas.ts

@@ -9,7 +9,7 @@ All query functions call named feature request functions (`getTodos`, `getTodo`,
 The `queryFn` receives a `QueryFunctionContext`. Forward its `signal` to the request function so TanStack Query can cancel in-flight requests on unmount or key change:
 
 ```tsx
-import { getTodo, getTodos } from "@/features/todos/api/todos.api";
+import { getTodo, getTodos } or TodoService from "@/features/todos/api/todos.api";
 import { TODOS_KEY, todoKey } from "@/features/todos/config/todos.constants";
 
 // Pass the id through, forward the signal for automatic cancellation
@@ -19,8 +19,18 @@ useQuery({
 });
 
 useQuery({
+  queryKey: todoKey(todoId),
+  queryFn: ({ signal }) => TodoService.getById(todoId, signal),
+});
+
+useQuery({
   queryKey: TODOS_KEY,
   queryFn: ({ signal }) => getTodos(signal),
+});
+
+useQuery({
+  queryKey: TODOS_KEY,
+  queryFn: ({ signal }) => TodoService.getAll(signal),
 });
 ```
 
@@ -495,13 +505,13 @@ import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 import { getTodos, getTodo } from "@/features/todos/api/todos.api";
 import { TODOS_KEY, todoKey } from "@/features/todos/config/todos.constants";
 
-export const todosOptions = queryOptions({
+export const todosQueryOptions = queryOptions({
   queryKey: TODOS_KEY,
   queryFn: ({ signal }) => getTodos(signal),
   staleTime: 5000,
 });
 
-export const todoOptions = (id: string) =>
+export const todoQueryOptions = (id: string) =>
   queryOptions({
     queryKey: todoKey(id),
     queryFn: ({ signal }) => getTodo(id, signal),
@@ -509,10 +519,10 @@ export const todoOptions = (id: string) =>
   });
 
 // Full type inference everywhere
-const { data } = useQuery(todosOptions);
-const { data } = useSuspenseQuery(todoOptions("123"));
-await queryClient.ensureQueryData(todosOptions);
-queryClient.invalidateQueries({ queryKey: todosOptions.queryKey });
+const { data } = useQuery(todosQueryOptions);
+const { data } = useSuspenseQuery(todoQueryOptions("123"));
+await queryClient.ensureQueryData(todosQueryOptions);
+queryClient.invalidateQueries({ queryKey: todosQueryOptions.queryKey });
 ```
 
 ## Persistence
