@@ -1,6 +1,6 @@
 ---
 name: react-project-conventions
-description: Core project conventions for React, React Native or Expo, Next.js, and TanStack Start projects. Use when creating, editing, reviewing, or organizing React projects that should follow the documented architecture, naming, styling, TypeScript, and Bun conventions.
+description: Core project conventions for React, React Native or Expo, Next.js, and TanStack Start projects. Use when creating, editing, reviewing, or organizing React projects that should follow the documented architecture, naming, styling, TypeScript, and package-manager/runtime conventions.
 ---
 
 # React Project Conventions
@@ -14,17 +14,19 @@ Apply the shared conventions in this file to every React-family project, then re
 - Next.js: `references/next-js.md`
 - TanStack Start: `references/tanstack-start.md`
 
+When changing implementation details such as imports, component style, handler naming, TypeScript, hooks, API modules, assets, or file naming, read `references/code-style.md`.
+
 If a project mixes stacks, read each relevant reference and prefer the more specific stack rule when there is overlap.
 
 ## Package Manager / Runtime
 
-Use **Bun** for this project.
+For new projects, prefer **Bun**.
 
-- Run scripts with `bun run`
-  - Example: `bun run start`
-  - Example: `bun run build`
-- Install dependencies with `bun install`
-- Prefer `bun` over `npm` or `yarn` in commands, scripts, examples, and documentation.
+For existing projects, follow the detected package manager and runtime from `package.json`, the `packageManager` field, lockfiles, scripts, and existing documentation.
+
+- Use `bun run` and `bun install` when the project uses Bun or has no established package manager.
+- Use the existing tool when the repository clearly uses `npm`, `pnpm`, or `yarn`.
+- Match the repository's current command style in examples, scripts, and documentation.
 
 ## Architecture
 
@@ -215,211 +217,9 @@ src/shared/utils/format-date.ts
 src/shared/types/api.ts
 ```
 
-## Imports
+## Implementation Style
 
-Use aliases for project imports.
-
-Project code under `src/` must be imported through the configured alias, usually `@/`.
-
-Good:
-
-```ts
-import LoginForm from "@/features/auth/ui/forms/login-form";
-import Button from "@/shared/components/button";
-import { validateLoginForm } from "@/features/auth/lib/validation";
-import { formatDate } from "@/shared/utils/format-date";
-```
-
-Do not use relative imports for project files, even when the relative path is short.
-
-Bad:
-
-```ts
-import Button from "../../../../shared/components/button";
-import { validateLoginForm } from "../lib/validation";
-import { formatDate } from "../../shared/utils/format-date";
-```
-
-Relative imports are allowed only for package-local files outside the app source tree, such as test fixtures or config files, when no alias is configured for that area.
-
-## Components
-
-Always use arrow functions assigned to `const` for components.
-
-Good:
-
-```tsx
-type LoginScreenProps = {
-  title?: string;
-};
-
-const LoginScreen = ({ title }: LoginScreenProps) => {
-  return <LoginForm title={title} />;
-};
-
-export default LoginScreen;
-```
-
-Do not use function declarations for components.
-
-Bad:
-
-```tsx
-export default function LoginScreen() {
-  return <LoginForm />;
-}
-```
-
-Use `export default` for screen and component files.
-
-## Functions
-
-Prefer arrow functions assigned to `const` instead of function declarations for project code.
-
-Good:
-
-```ts
-const formatUserName = (firstName: string, lastName: string) => {
-  return `${firstName} ${lastName}`;
-};
-
-const useAccounts = () => {
-  return useQuery(accountsQueryOptions());
-};
-```
-
-Bad:
-
-```ts
-function formatUserName(firstName: string, lastName: string) {
-  return `${firstName} ${lastName}`;
-}
-
-function useAccounts() {
-  return useQuery(accountsQueryOptions());
-}
-```
-
-## Handlers
-
-Use `on...` names for parent/main callbacks and prop-facing functions that are
-passed into components.
-
-Good:
-
-```tsx
-const onPress = () => {};
-const onSubmit = () => {};
-const onCloseModal = () => {};
-const onChangeText = (value: string) => {};
-
-type Props = {
-  onPress: () => void;
-  onChangeText: (value: string) => void;
-};
-```
-
-Inside child components, when a local function wraps a callback or adds
-component-specific logic, use a descriptive `handler` suffix and call the
-`on...` callback from there.
-
-Good:
-
-```tsx
-type Props = {
-  onPress: () => void;
-  onChangeText: (value: string) => void;
-};
-
-const InnerButton = ({ onPress, onChangeText }: Props) => {
-  const pressHandler = () => {
-    onPress();
-  };
-
-  const changeTextHandler = (value: string) => {
-    onChangeText(value);
-  };
-
-  return null;
-};
-```
-
-Bad:
-
-```tsx
-const handlePress = () => {};
-const onSubmit = () => {
-  validateForm();
-  props.onSubmit();
-};
-const click = () => {};
-```
-
-Use descriptive names for variables, functions, and handlers.
-
-## TypeScript
-
-Use TypeScript everywhere.
-
-Prefer explicit types for:
-
-- component props
-- API responses
-- store state
-- public utility function arguments
-- shared reusable modules
-
-Good:
-
-```ts
-type Props = {
-  className: string;
-  children: ReactNode;
-};
-
-export type LoginFormProps = {
-  isLoading: boolean;
-  onSubmit: (values: LoginFormValues) => void;
-};
-
-type User = {
-  name: string;
-  surname: string;
-};
-
-type AdminUser = User & {
-  isAdmin: true;
-};
-```
-
-Avoid `any`.
-
-Use `unknown` when the type is truly unknown and narrow it before usage.
-
-## Hooks
-
-Feature-specific hooks belong inside the feature.
-
-```txt
-src/features/auth/model/hooks/use-login.ts
-```
-
-Shared hooks belong in:
-
-```txt
-src/shared/hooks/
-```
-
-Hook names must start with `use`.
-
-Good:
-
-```ts
-useLogin;
-useAccounts;
-useDebounce;
-useKeyboardInsets;
-```
+For detailed import, component, function, handler, TypeScript, hook, API, asset, and file naming conventions, read `references/code-style.md`.
 
 ## State Management
 
@@ -440,142 +240,6 @@ src/features/auth/model/stores/auth.store.ts
 src/features/onboarding/model/context/onboarding.context.tsx
 src/processes/providers/app-provider.tsx
 src/processes/providers/ui-provider.tsx
-```
-
-## API Layer
-
-Shared HTTP clients and infrastructure belong in:
-
-```txt
-src/shared/services/
-```
-
-Feature API modules belong in:
-
-```txt
-src/features/<feature>/api
-```
-
-Good:
-
-```txt
-src/shared/services/http-client.ts
-src/features/auth/api/auth.service.ts
-src/features/accounts/api/accounts.service.ts
-```
-
-Feature APIs should not duplicate base request logic.
-
-Good:
-
-```ts
-// src/shared/services/http-client.ts
-export class httpClient extends ApiRequestService {
-  constructor() {
-    super();
-  }
-}
-
-// src/features/accounts/api/accounts.service.ts
-import { httpClient } from "@/shared/services/http-client";
-
-export class AccountsService {
-  public static getAll() {
-    return httpClient.get<Account[]>("/accounts").then((res) => res.data);
-  }
-
-  public static getById(id: string) {
-    return httpClient.get<Account>(`/accounts/${id}`).then((res) => res.data);
-  }
-}
-```
-
-Bad:
-
-```ts
-// src/features/accounts/api/accounts.service.ts
-// Re-creates base URL and headers that already live in the shared client.
-export class AccountsService {
-  public static getAll() {
-    return axios
-      .get<Account[]>(`${import.meta.env.VITE_API_URL}/accounts`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
-      .then((res) => res.data);
-  }
-}
-```
-
-## Assets
-
-Use `src/assets` for static media.
-
-```txt
-src/assets/images/
-src/assets/icons/
-src/assets/videos/
-```
-
-Feature-specific assets may stay inside a feature only if they are strongly tied to that feature and not reused elsewhere.
-
-## File Naming
-
-Use clear, descriptive kebab-case file and folder names.
-
-Use `-` between words. Do not use camelCase or PascalCase for file or folder names.
-
-Good:
-
-```txt
-use-login.tsx
-login-screen.tsx
-account-settings-form.tsx
-keyboard-insets.ts
-http-client.ts
-```
-
-Bad:
-
-```txt
-useLogin.tsx
-LoginScreen.tsx
-AccountSettingsForm.tsx
-keyboardInsets.ts
-httpClient.ts
-```
-
-This rule applies to filenames and directory names. TypeScript identifiers should still use the normal language conventions, such as `LoginScreen`, `useLogin`, and `formatDate`.
-
-Recommended:
-
-```txt
-login-screen.tsx
-login-form.tsx
-auth.service.ts
-auth.store.ts
-use-login.ts
-validation.ts or schemas.ts
-types.ts
-utils.ts
-constants.ts
-```
-
-Avoid vague names:
-
-```txt
-helpers.ts
-data.ts
-stuff.ts
-common.ts
-```
-
-Use generic proper names like `<feature>.utils.ts` or `<feature>.types.ts` only inside a clear scope.
-
-Good:
-
-```txt
-src/features/auth/lib/auth.utils.ts
-src/features/auth/lib/auth.types.ts
 ```
 
 ## Public Reuse Rule
@@ -606,29 +270,6 @@ Allowed exceptions:
 
 - route/screen composition inside `src/app/`
 - app-wide orchestration inside `src/processes/`
-
-## Code Style
-
-Prefer:
-
-- early returns
-- small components
-- readable names
-- colocated feature logic
-- simple composition
-- arrow functions assigned to `const`
-- explicit types where useful
-- platform-specific files when platform behavior differs
-
-Avoid:
-
-- deeply nested logic
-- large route files
-- shared folders becoming dumping grounds
-- cross-feature imports between unrelated features
-- inline styles for static styling
-- platform-wrong UI libraries
-- function declarations for project code
 
 ## Default Decision Rule
 
