@@ -115,7 +115,10 @@ Organize feature UI by composition level:
 
 Use either `pages/` or `screens/` based on the stack. Do not use both unless the same feature is intentionally shared across web and native.
 
+Start flat. Keep components directly in `ui/` when the feature has only a few files. Introduce the subfolders above only when the feature UI becomes complex or has many files — and when you do, use exactly this set (`pages/` or `screens/`, `forms/`, `wrappers/`, `blocks/`, `elements/`) rather than inventing new ones.
+
 ```txt
+src/features/settings/ui/settings-page.tsx
 src/features/auth/ui/pages/login-page.tsx
 src/features/auth/ui/screens/login-screen.tsx
 src/features/auth/ui/forms/login-form.tsx
@@ -204,7 +207,7 @@ Accept singular names only when the existing repository already uses them consis
 
 ```txt
 src/features/auth/lib/validation.ts
-src/features/accounts/model/hooks/use-accounts.ts
+src/features/accounts/model/hooks/use-account-filters.ts
 src/features/onboarding/ui/elements/step-indicator.tsx
 ```
 

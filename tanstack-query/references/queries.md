@@ -525,6 +525,19 @@ await queryClient.ensureQueryData(todosQueryOptions);
 queryClient.invalidateQueries({ queryKey: todosQueryOptions.queryKey });
 ```
 
+Consume query options directly in components. Do not add a `useTodos()` hook that only returns `useQuery(todosQueryOptions)`; write a custom hook only when it takes params or adds logic (`select`, `enabled`, combining queries, derived state).
+
+```tsx
+// Good — call useQuery with the options in the component
+const TodosList = () => {
+  const { data } = useQuery(todosQueryOptions);
+  return null;
+};
+
+// Bad — one-line wrapper with no params and no logic
+const useTodos = () => useQuery(todosQueryOptions);
+```
+
 ## Persistence
 
 ```tsx

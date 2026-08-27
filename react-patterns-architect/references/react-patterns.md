@@ -497,11 +497,11 @@ Polymorphism is often overused. Prefer separate components when behavior differs
 
 ### Purpose
 
-Use custom hooks to reuse stateful logic, side effects, subscriptions, data fetching wrappers, UI behavior, form logic, or URL state.
+Use custom hooks to reuse stateful logic, side effects, subscriptions, data fetching hooks that add params or logic, UI behavior, form logic, or URL state.
 
 ### Best For
 
-- Data fetching wrappers.
+- Data fetching hooks that add params or logic (not one-line `useQuery(xxxQueryOptions())` wrappers — call those directly in the component).
 - UI behavior.
 - Subscriptions.
 - Forms.
@@ -535,7 +535,7 @@ Use hook factories to generate specialized hooks from shared configuration or in
 ### Best For
 
 - API modules.
-- Feature-specific query hooks.
+- Feature-specific query hooks that take params or add logic.
 - Shared behavior with injected dependencies.
 - Multi-tenant or variant-based behavior.
 
@@ -609,7 +609,7 @@ Separate data/state from UI. Containers fetch, subscribe, or coordinate behavior
 
 Use feature hooks plus composition:
 
-- `src/features/accounts/model/hooks/use-accounts.ts`
+- `src/features/accounts/model/hooks/use-account-filters.ts`
 - `src/features/accounts/ui/pages/accounts-page.tsx`
 - `src/features/accounts/ui/blocks/accounts-table.tsx`
 
@@ -899,7 +899,7 @@ src/features/accounts/
     accounts.mappers.ts
   model/
     hooks/
-      use-accounts.ts
+      use-account-filters.ts
     context/
     stores/
   ui/
@@ -1471,7 +1471,7 @@ src/features/accounts/
     accounts.types.ts
   model/
     hooks/
-      use-accounts.ts
+      use-account-filters.ts
   ui/
     pages/
       accounts-page.tsx

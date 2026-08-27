@@ -110,20 +110,21 @@ Wrap each query's key, `queryFn`, and options in a `queryOptions` factory, coloc
 
 1. **Define request functions in the feature API module** (`getTodos`, `createTodo`, …) that compose a shared HTTP client — never call `fetch` inline in `queryFn`/`mutationFn`
 2. **Use `queryOptions` helper** for type-safe, reusable query configurations
-3. **Never inline raw string query keys** - define them as `as const` constants in a `*.constants.ts` file and import them
-4. **Structure query keys hierarchically** for granular invalidation
-5. **Set appropriate `staleTime`** - 0 means always refetch on mount (default), increase for less dynamic data
-6. **Use `placeholderData`** (not `initialData`) for keeping previous page data during pagination
-7. **Prefer `useSuspenseQuery`** when using Suspense boundaries for cleaner component code
-8. **Use `enabled`** for dependent queries, not conditional hook calls
-9. **Always invalidate after mutations** - don't rely solely on optimistic updates
-10. **Cancel queries in `onMutate`** before optimistic updates to prevent race conditions
-11. **Use `ensureQueryData`** in route loaders instead of `prefetchQuery` for immediate access
-12. **Set `retry: false` in tests** to avoid timeout issues
-13. **Don't destructure the query result** if you need to pass it around (breaks reactivity)
-14. **Use `select`** for derived data instead of transforming in the component
-15. **Keep query functions pure** - they should only fetch, not cause side effects
-16. **Use `gcTime: Infinity`** in tests to prevent cache cleanup during assertions
+3. **Call `useQuery(xxxQueryOptions())` directly in components** - don't wrap it in a one-line custom hook; add a hook only when it takes params or adds logic
+4. **Never inline raw string query keys** - define them as `as const` constants in a `*.constants.ts` file and import them
+5. **Structure query keys hierarchically** for granular invalidation
+6. **Set appropriate `staleTime`** - 0 means always refetch on mount (default), increase for less dynamic data
+7. **Use `placeholderData`** (not `initialData`) for keeping previous page data during pagination
+8. **Prefer `useSuspenseQuery`** when using Suspense boundaries for cleaner component code
+9. **Use `enabled`** for dependent queries, not conditional hook calls
+10. **Always invalidate after mutations** - don't rely solely on optimistic updates
+11. **Cancel queries in `onMutate`** before optimistic updates to prevent race conditions
+12. **Use `ensureQueryData`** in route loaders instead of `prefetchQuery` for immediate access
+13. **Set `retry: false` in tests** to avoid timeout issues
+14. **Don't destructure the query result** if you need to pass it around (breaks reactivity)
+15. **Use `select`** for derived data instead of transforming in the component
+16. **Keep query functions pure** - they should only fetch, not cause side effects
+17. **Use `gcTime: Infinity`** in tests to prevent cache cleanup during assertions
 
 ## Common Pitfalls
 

@@ -83,8 +83,9 @@ const formatUserName = (firstName: string, lastName: string) => {
   return `${firstName} ${lastName}`;
 };
 
-const useAccounts = () => {
-  return useQuery(accountsQueryOptions());
+const AccountsList = () => {
+  const { data } = useQuery(accountsQueryOptions());
+  return null;
 };
 ```
 
@@ -95,8 +96,9 @@ function formatUserName(firstName: string, lastName: string) {
   return `${firstName} ${lastName}`;
 }
 
-function useAccounts() {
-  return useQuery(accountsQueryOptions());
+function AccountsList() {
+  const { data } = useQuery(accountsQueryOptions());
+  return null;
 }
 ```
 
@@ -138,6 +140,37 @@ const InnerButton = ({ onPress, onChangeText }: Props) => {
   };
 
   return null;
+};
+```
+
+Use the `handler` suffix only when the local function wraps an `on...` callback received from props. If there is no prop callback to call, keep the `on...` name for the local function.
+
+Good:
+
+```tsx
+const SearchInput = () => {
+  const [value, setValue] = useState("");
+
+  const onChangeText = (text: string) => {
+    setValue(text);
+  };
+
+  return <TextInput value={value} onChangeText={onChangeText} />;
+};
+```
+
+Bad:
+
+```tsx
+// No onChangeText prop exists, so the suffix has nothing to wrap.
+const SearchInput = () => {
+  const [value, setValue] = useState("");
+
+  const changeTextHandler = (text: string) => {
+    setValue(text);
+  };
+
+  return <TextInput value={value} onChangeText={changeTextHandler} />;
 };
 ```
 
@@ -213,9 +246,29 @@ Good:
 
 ```ts
 useLogin;
-useAccounts;
+useAccountFilters;
 useDebounce;
 useKeyboardInsets;
+```
+
+Do not create a hook that only forwards to `useQuery(xxxQueryOptions())`. Call `useQuery(accountsQueryOptions())` directly in each component. Create a custom hook only when it accepts props/params or adds logic (`select`, `enabled`, derived state, combining several queries).
+
+Good:
+
+```tsx
+const AccountsList = () => {
+  const { data } = useQuery(accountsQueryOptions());
+  return null;
+};
+```
+
+Bad:
+
+```ts
+// One-line wrapper with no params and no logic.
+const useAccounts = () => {
+  return useQuery(accountsQueryOptions());
+};
 ```
 
 ## API Layer
@@ -257,20 +310,23 @@ import { HttpClient } from "@/shared/services/http-client";
 
 export class AccountsService {
   public static getAll() {
-    return HttpClient.get<Account[]>("/accounts").then((res) => res.data);
+    return HttpClient.get<Account[]>("/accounts");
   }
 
   public static getById(id: string) {
-    return HttpClient.get<Account>(`/accounts/${id}`).then((res) => res.data);
+    return HttpClient.get<Account>(`/accounts/${id}`);
   }
 }
 ```
+
+Do not unwrap responses with `.then((res) => res.data)` in feature services. Response unwrapping lives in the shared `ApiRequestService` (`HttpClient`) when it is available; only unwrap in the feature module if the shared client returns the raw response.
 
 Bad:
 
 ```ts
 // src/features/accounts/api/accounts.service.ts
-// Re-creates base URL and headers that already live in the shared client.
+// Re-creates base URL and headers that already live in the shared client,
+// and unwraps the response that the shared client already handles.
 export class AccountsService {
   public static getAll() {
     return axios
