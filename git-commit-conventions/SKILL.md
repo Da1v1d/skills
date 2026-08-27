@@ -9,7 +9,8 @@ Use this rule when the user asks to commit, amend, or write commit messages.
 
 ## When to commit
 
-- Prefer one-line commit messages. Use a body only for large or non-obvious changes.
+- Prefer one-line commit messages. Add a body only when the _why_ is not obvious from the subject — and lead with the one-liner when presenting both.
+- **One commit = one logical change.** If the subject needs areas joined by "and", or the body enumerates changes that don't share a reason, propose separate commits and show each message.
 - Draft commit messages and commit commands only. The user is responsible for staging and running commits.
 - Do not commit secrets (`.env`, credentials, keys). Warn if the user tries to include them.
 - Do not create empty commits when there are no changes.
@@ -39,7 +40,20 @@ Use **Conventional Commits** in the imperative mood:
 | `build`    | Build tooling or bundler config (Expo, Metro, tsconfig build) |
 | `ci`       | CI/CD pipelines (GitHub Actions, EAS, hooks in CI)            |
 
-**Summary:** lowercase, no trailing period, ~50 chars; focus on **why** / user-visible outcome.
+**Summary:** lowercase, imperative, no trailing period. Target ≤50 chars, hard cap 72.
+
+**Body:** **why** / user-visible outcome, never a file list. **Hard-wrap at 72 columns — `-m` does not wrap for you.** Any body longer than one short sentence must be drafted with a heredoc, not `-m`:
+
+```
+git commit -F - <<'EOF'
+docs(skills): tighten api and ui folder rules
+
+Rules had drifted from what the codebase does; each entry now names the
+behavior it forbids.
+EOF
+```
+
+`-m "…" -m "…"` is acceptable only when each `-m` is itself under 72 chars (each becomes its own paragraph, still unwrapped).
 
 **Examples:**
 
@@ -51,17 +65,17 @@ refactor(shared): extract date formatting helper
 chore: bump expo sdk
 ```
 
-Match recent repo style when present (`git log -10 --oneline`).
+Match recent repo style when present (`git log -10 --oneline`); repo style wins over the length target when the two conflict.
 
 ## Workflow before committing
 
 1. Run in parallel: `git status`, `git diff` (staged + unstaged), `git log -10 --oneline`.
 2. Identify staged files. If nothing is staged, identify relevant unstaged files and draft from the intended change set without staging anything.
-3. Post a short summary:
-   - Proposed commit message (subject + body if any)
-   - Files that appear relevant or are already staged
-   - Any secrets, generated files, or unrelated changes the user should exclude
-4. If the user reports a hook failure, help fix the issue and draft a new commit message or command.
+3. Post one draft block, in this order:
+   - **Message** — the one-liner first; show a body variant only if recommending one.
+   - **Files** — relevant or already staged, listed exactly once. If they also appear in the command below, don't list them above it too.
+   - **Flags** — secrets, generated files, unrelated changes to exclude, or a proposed split.
+   - **Command** — `git add …` and `git commit …` on separate lines, never chained with `&&`, so the user can inspect the index before committing.
 
 ## Safety (do not skip)
 
@@ -70,8 +84,4 @@ Match recent repo style when present (`git log -10 --oneline`).
 - **Never push.** The user pushes to remotes manually. Do not run `git push`, `git push -u`, or publish branches unless the user explicitly asks in that conversation.
 - Never force-push to `main`/`master` (or any branch) without explicit request and a clear warning about rewriting remote history.
 - Draft amend messages only when the user asks for amend.
-- If commit **failed** or was **rejected by a hook**, fix and draft a **new** commit message — do not suggest amend unless the user explicitly asks.
-
-## Pre-commit hook failures
-
-Fix the reported issue, tell the user what to re-stage if needed, then draft a **new** commit message or command. Do not suggest amend unless the user explicitly asks.
+- If a commit **failed** or was **rejected by a hook**, fix the issue, say what needs re-staging, and draft a **new** commit message — do not suggest amend unless the user explicitly asks.
