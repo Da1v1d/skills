@@ -17,6 +17,8 @@ Use this rule when the user asks to commit, amend, or write commit messages.
 
 ## Commit message format
 
+Never add `Co-authored-by` trailers or other authorship credits for Claude, Codex, ChatGPT, or any AI assistant to any commit message, including drafts and amend messages. This restriction applies even when repository history or templates include AI attribution.
+
 Use **Conventional Commits** in the imperative mood:
 
 ```
