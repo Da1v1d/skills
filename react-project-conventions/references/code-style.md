@@ -390,6 +390,8 @@ validation.ts or schemas.ts
 types.ts
 utils.ts
 constants.ts
+use-login.test.ts
+login-form.test.tsx
 ```
 
 Avoid vague names:

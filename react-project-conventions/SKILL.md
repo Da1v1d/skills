@@ -42,7 +42,7 @@ The main rule:
 | -------------------------- | ------------------------------------------------------------------------------------- |
 | `src/app/`                 | App routing, layouts, pages/screens, and route-level composition                      |
 | `src/processes/`           | App-wide providers, contexts, initialization, and cross-cutting wiring                |
-| `src/features/<feature>/`  | Feature slices with UI, model, API, lib, and config                                   |
+| `src/features/<feature>/`  | Feature slices with UI, model, API, lib, config, and tests                            |
 | `src/shared/components/`   | Reusable shared UI components                                                         |
 | `src/shared/hooks/`        | Cross-feature reusable hooks                                                          |
 | `src/shared/utils/`        | Cross-feature helpers and pure utilities                                              |
@@ -50,6 +50,7 @@ The main rule:
 | `src/shared/types/`        | Shared TypeScript types                                                               |
 | `src/shared/services/`     | Shared infrastructure such as HTTP clients, storage, logging, analytics, i18n helpers |
 | `src/shared/configs/`      | Shared configuration modules                                                          |
+| `src/shared/tests/`        | Cross-feature test utilities, render helpers, and shared mocks                        |
 | `src/shared/translations/` | i18n resources                                                                        |
 | `src/assets/images/`       | Static images                                                                         |
 | `src/assets/icons/`        | Static icons                                                                          |
@@ -94,6 +95,9 @@ src/features/<feature>/
     wrappers/
     blocks/
     elements/
+  tests/
+    fixtures/
+    mocks/
 ```
 
 ## Feature Segments
@@ -186,6 +190,28 @@ src/features/auth/config/auth.constants.ts
 src/features/accounts/config/accounts.permissions.tsx
 ```
 
+### `tests/`
+
+Feature-specific tests, fixtures, and mocks.
+
+Use this folder for:
+
+- unit and integration tests for the feature's `ui/`, `model/`, `api/`, and `lib/` code
+- test fixtures such as sample entities and API responses
+- feature-only mocks such as mocked services, stores, or request handlers
+
+Name each test file after the module it covers, using the `.test.ts` or `.test.tsx` suffix. Keep tests directly in `tests/` and add `fixtures/` and `mocks/` only when the feature has enough of them to justify the split.
+
+```txt
+src/features/auth/tests/use-login.test.ts
+src/features/auth/tests/login-form.test.tsx
+src/features/accounts/tests/accounts.utils.test.ts
+src/features/accounts/tests/fixtures/accounts.fixtures.ts
+src/features/accounts/tests/mocks/accounts.service.mock.ts
+```
+
+Tests import from the feature's own segments and from `shared/`. They should not import from other features' `tests/` folders. Move render helpers, mock factories, or fixtures to `src/shared/tests/` only when two or more features use them.
+
 ## Feature Naming
 
 Use plural feature folder names when the feature represents a domain aggregate.
@@ -209,6 +235,7 @@ Accept singular names only when the existing repository already uses them consis
 src/features/auth/lib/validation.ts
 src/features/accounts/model/hooks/use-account-filters.ts
 src/features/onboarding/ui/elements/step-indicator.tsx
+src/features/auth/tests/mocks/auth.service.mock.ts
 ```
 
 ### Move To Shared When Two Or More Features Use It
@@ -218,6 +245,7 @@ src/shared/components/button.tsx
 src/shared/hooks/use-debounce.ts
 src/shared/utils/format-date.ts
 src/shared/types/api.ts
+src/shared/tests/render-with-providers.tsx
 ```
 
 ## Implementation Style
