@@ -410,6 +410,16 @@ Good:
 ```txt
 src/features/auth/lib/auth.utils.ts
 src/features/auth/lib/auth.types.ts
+src/features/auth/config/auth.configs.ts
+src/features/auth/lib/auth.types.ts
+```
+
+Bad
+
+```
+src/features/auth/lib/types.ts
+src/features/auth/lib/auth-icons.ts
+src/features/auth/lib/format-name.ts
 ```
 
 ## Code Style
