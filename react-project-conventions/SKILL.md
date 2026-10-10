@@ -1,6 +1,6 @@
 ---
 name: react-project-conventions
-description: Core project conventions for React, React Native or Expo, Next.js, and TanStack Start projects. Use when creating, editing, reviewing, or organizing React projects that should follow the documented architecture, naming, styling, TypeScript, and package-manager/runtime conventions.
+description: Core project conventions for React, React Native or Expo, Next.js, and TanStack Start projects. Use when creating, editing, reviewing, or organizing React projects — deciding where a file or folder goes, structuring feature slices, naming files, writing imports and exports, placing queries, mutations, and API code, or choosing styling, TypeScript, and package-manager/runtime conventions.
 ---
 
 # React Project Conventions
@@ -17,6 +17,12 @@ Apply the shared conventions in this file to every React-family project, then re
 When changing implementation details such as imports, component style, handler naming, TypeScript, hooks, API modules, assets, or file naming, read `references/code-style.md`.
 
 If a project mixes stacks, read each relevant reference and prefer the more specific stack rule when there is overlap.
+
+## Precedence
+
+Apply these conventions fully to new projects and new code.
+
+In an existing repository that consistently follows a different convention, follow the repository for that area and keep the change consistent with its surroundings. Do not mass-migrate existing code to these conventions unless the user asks.
 
 ## Package Manager / Runtime
 
@@ -119,29 +125,46 @@ Organize feature UI by composition level:
 
 Use either `pages/` or `screens/` based on the stack. Do not use both unless the same feature is intentionally shared across web and native.
 
-Start flat. Keep components directly in `ui/` when the feature has only a few files. Introduce the subfolders above only when the feature UI becomes complex or has many files — and when you do, use exactly this set (`pages/` or `screens/`, `forms/`, `wrappers/`, `blocks/`, `elements/`) rather than inventing new ones.
+Start flat. When a feature has only a handful of UI files (about five or fewer), keep them all directly in `ui/` and do not split them into `pages/`, `screens/`, `forms/`, `wrappers/`, `blocks/`, or `elements/`. A small feature with a screen, a form, and a wrapper stays flat.
+
+Flat, for a small feature:
 
 ```txt
-src/features/settings/ui/settings-page.tsx
-src/features/auth/ui/pages/login-page.tsx
+src/features/settings/ui/settings-screen.tsx
+src/features/settings/ui/settings-form.tsx
+src/features/settings/ui/settings-wrapper.tsx
+src/features/settings/ui/settings-row.tsx
+```
+
+Introduce the subfolders only when the flat `ui/` folder grows past that and becomes hard to scan. When you do:
+
+- Move all UI files into subfolders at once. Do not mix flat files with subfolders.
+- Use exactly this set (`pages/` or `screens/`, `forms/`, `wrappers/`, `blocks/`, `elements/`) rather than inventing new ones.
+- Create only the subfolders that will hold files. Do not add empty ones for completeness.
+
+Split, for a larger feature:
+
+```txt
 src/features/auth/ui/screens/login-screen.tsx
+src/features/auth/ui/screens/sign-up-screen.tsx
 src/features/auth/ui/forms/login-form.tsx
+src/features/auth/ui/forms/sign-up-form.tsx
 src/features/auth/ui/wrappers/auth-form-wrapper.tsx
-src/features/onboarding/ui/blocks/onboarding-step.tsx
-src/features/accounts/ui/elements/account-row.tsx
+src/features/auth/ui/blocks/social-login-block.tsx
+src/features/auth/ui/elements/password-strength-meter.tsx
 ```
 
 ### `model/`
 
-Feature state and data-access logic.
+Feature client state and state logic.
 
-Use this folder for:
+Use exactly these subfolders:
 
-- feature hooks
-- feature stores
-- feature contexts
-- state mappers
-- screen-level state logic
+- `hooks/` for feature hooks and screen-level state logic
+- `stores/` for feature stores
+- `context/` for feature-scoped React context and its provider
+
+Do not put queries, mutations, server actions, or server functions in `model/`. They belong in `api/`.
 
 ```txt
 src/features/auth/model/hooks/use-login.ts
@@ -151,16 +174,27 @@ src/features/onboarding/model/context/onboarding.context.tsx
 
 ### `api/`
 
-Feature API modules.
+Feature data access: endpoint calls, queries, mutations, and server-side entry points.
 
-Use this folder when a feature calls backend endpoints. Feature API modules should compose shared infrastructure from `src/shared/services`.
+Keep files flat in `api/` and name them by kind:
+
+| File                     | Contains                                                  |
+| ------------------------ | --------------------------------------------------------- |
+| `<feature>.service.ts`   | Endpoint calls built on the shared HTTP client            |
+| `<feature>.queries.ts`   | Query keys and `queryOptions` factories                   |
+| `<feature>.mutations.ts` | `mutationOptions` factories or mutation functions         |
+| `<feature>.actions.ts`   | Next.js Server Actions or TanStack Start server functions |
+
+Create only the files the feature needs. Split one kind into several files only when it grows large, keeping the suffix, for example `create-account.actions.ts`.
 
 ```txt
 src/features/accounts/api/accounts.service.ts
-src/features/auth/api/auth.service.ts
+src/features/accounts/api/accounts.queries.ts
+src/features/accounts/api/accounts.mutations.ts
+src/features/accounts/api/accounts.actions.ts
 ```
 
-Do not create duplicate raw HTTP clients inside features if a shared client already exists.
+Feature API modules compose shared infrastructure from `src/shared/services`. Do not create duplicate raw HTTP clients inside features if a shared client already exists.
 
 ### `lib/`
 
@@ -180,14 +214,18 @@ src/features/accounts/lib/accounts.utils.ts
 src/features/auth/lib/auth.validation.ts
 ```
 
+Name `lib/` files `<feature>.<kind>.ts`. Group related helpers in one file per kind instead of creating one file per function.
+
 ### `config/`
 
 Feature-specific constants, configs, feature flags, or permission definitions.
 
+Name files `<feature>.<kind>.ts`.
+
 ```txt
-src/features/onboarding/config/onboarding.configs.ts
+src/features/onboarding/config/onboarding.config.ts
 src/features/auth/config/auth.constants.ts
-src/features/accounts/config/accounts.permissions.tsx
+src/features/accounts/config/accounts.permissions.ts
 ```
 
 ### `tests/`
@@ -232,7 +270,7 @@ Accept singular names only when the existing repository already uses them consis
 ### Keep Inside A Feature When Only One Feature Uses It
 
 ```txt
-src/features/auth/lib/validation.ts
+src/features/auth/lib/auth.validation.ts
 src/features/accounts/model/hooks/use-account-filters.ts
 src/features/onboarding/ui/elements/step-indicator.tsx
 src/features/auth/tests/mocks/auth.service.mock.ts
@@ -254,21 +292,11 @@ For detailed import, component, function, handler, TypeScript, hook, API, asset,
 
 ## State Management
 
-Feature-specific state should stay inside the feature slice.
+Keep client state inside the feature's `model/` and server state in TanStack Query through the feature's `api/<feature>.queries.ts`.
 
-Shared or global state may live in `src/shared` or `src/processes` depending on purpose.
-
-Use:
-
-- `features/<feature>/model/stores/` for feature stores
-- `features/<feature>/model/context/` for feature-scoped context
-- `processes/` for app-wide providers and global wiring
-
-Examples:
+Put app-wide providers and global wiring in `src/processes/`:
 
 ```txt
-src/features/auth/model/stores/auth.store.ts
-src/features/onboarding/model/context/onboarding.context.tsx
 src/processes/providers/app-provider.tsx
 src/processes/providers/ui-provider.tsx
 ```
@@ -301,6 +329,8 @@ Allowed exceptions:
 
 - route/screen composition inside `src/app/`
 - app-wide orchestration inside `src/processes/`
+
+Do not create barrel `index.ts` files for features or segments. Import each module from its own file path, for example `@/features/auth/ui/forms/login-form`.
 
 ## Default Decision Rule
 

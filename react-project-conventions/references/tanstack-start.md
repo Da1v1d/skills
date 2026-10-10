@@ -46,7 +46,8 @@ Good:
 
 ```tsx
 export const Route = createFileRoute("/accounts")({
-  loader: () => accountsQueryOptions(),
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(accountsQueryOptions()),
   component: AccountsPage,
 });
 ```
@@ -55,9 +56,12 @@ Put feature query options, mutations, and server functions inside the feature wh
 
 ```txt
 src/features/accounts/api/accounts.service.ts
-src/features/accounts/model/queries/accounts.queries.ts
-src/features/accounts/model/actions/create-account.action.ts
+src/features/accounts/api/accounts.queries.ts
+src/features/accounts/api/accounts.mutations.ts
+src/features/accounts/api/accounts.actions.ts
 ```
+
+Put server functions created with `createServerFn` in `<feature>.actions.ts`.
 
 Put cross-feature infrastructure in `src/shared/services/`.
 

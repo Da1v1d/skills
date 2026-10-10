@@ -65,12 +65,32 @@ src/app/api/accounts/route.ts
 
 Put shared backend clients, auth helpers, and infrastructure in `src/shared/services/`.
 
-Feature-specific server logic should stay in the feature:
+Feature-specific server logic stays in the feature's `api/` folder:
 
 ```txt
-src/features/accounts/api/accounts.api.ts
-src/features/accounts/model/actions/create-account.action.ts
+src/features/accounts/api/accounts.service.ts
+src/features/accounts/api/accounts.queries.ts
+src/features/accounts/api/accounts.actions.ts
 ```
+
+Put Server Actions in `<feature>.actions.ts` with `"use server"` at the top of the file:
+
+```ts
+// src/features/accounts/api/accounts.actions.ts
+"use server";
+
+export const createAccountAction = async (values: CreateAccountValues) => {
+  return AccountsService.create(values);
+};
+```
+
+Add `import "server-only";` to modules that must never reach the client bundle, such as code that reads secrets or calls a database.
+
+## Data Fetching
+
+Fetch data in Server Components by default, either by calling the feature service directly or by prefetching `queryOptions` from `<feature>.queries.ts` and passing the cache to the client with a hydration boundary.
+
+Use TanStack Query on the client only for data that changes after the page loads, such as polling, infinite lists, or optimistic updates.
 
 ## Styling
 

@@ -5,6 +5,7 @@ Use this reference when changing implementation details such as imports, compone
 ## Contents
 
 - Imports
+- Exports
 - Components
 - Functions
 - Handlers
@@ -26,7 +27,7 @@ Good:
 ```ts
 import LoginForm from "@/features/auth/ui/forms/login-form";
 import Button from "@/shared/components/button";
-import { validateLoginForm } from "@/features/auth/lib/validation";
+import { validateLoginForm } from "@/features/auth/lib/auth.validation";
 import { formatDate } from "@/shared/utils/format-date";
 ```
 
@@ -36,11 +37,25 @@ Bad:
 
 ```ts
 import Button from "../../../../shared/components/button";
-import { validateLoginForm } from "../lib/validation";
+import { validateLoginForm } from "../lib/auth.validation";
 import { formatDate } from "../../shared/utils/format-date";
 ```
 
 Relative imports are allowed only for package-local files outside the app source tree, such as test fixtures or config files, when no alias is configured for that area.
+
+Import each module from its own file. Do not add or import through barrel `index.ts` files.
+
+## Exports
+
+Use `export default` for components, including pages, screens, and route files.
+
+Use named exports for everything else: hooks, utilities, types, constants, services, query and mutation factories, actions, and stores.
+
+```ts
+export const useLogin = () => {};
+export const accountsQueryOptions = () => {};
+export type Account = { id: string };
+```
 
 ## Components
 
@@ -70,11 +85,11 @@ export default function LoginScreen() {
 }
 ```
 
-Use `export default` for screen and component files.
-
 ## Functions
 
 Prefer arrow functions assigned to `const` instead of function declarations for project code.
+
+The one exception is API services, which are classes with static methods (see API Layer).
 
 Good:
 
@@ -191,6 +206,10 @@ Use descriptive names for variables, functions, and handlers.
 
 Use TypeScript everywhere.
 
+Use `type` for object shapes, props, and unions. Use `interface` only when declaration merging is required, such as augmenting a library type.
+
+Name a component's props type `Props` when it is used only in that file. Name it `<ComponentName>Props` and export it when other files need it.
+
 Prefer explicit types for:
 
 - component props
@@ -202,11 +221,13 @@ Prefer explicit types for:
 Good:
 
 ```ts
+// Used only inside this file.
 type Props = {
   className: string;
   children: ReactNode;
 };
 
+// Imported by other files.
 export type LoginFormProps = {
   isLoading: boolean;
   onSubmit: (values: LoginFormValues) => void;
@@ -228,17 +249,7 @@ Use `unknown` when the type is truly unknown and narrow it before usage.
 
 ## Hooks
 
-Feature-specific hooks belong inside the feature.
-
-```txt
-src/features/auth/model/hooks/use-login.ts
-```
-
-Shared hooks belong in:
-
-```txt
-src/shared/hooks/
-```
+Place hooks as described in `SKILL.md`: feature hooks in `model/hooks/`, cross-feature hooks in `src/shared/hooks/`.
 
 Hook names must start with `use`.
 
@@ -251,7 +262,7 @@ useDebounce;
 useKeyboardInsets;
 ```
 
-Do not create a hook that only forwards to `useQuery(xxxQueryOptions())`. Call `useQuery(accountsQueryOptions())` directly in each component. Create a custom hook only when it accepts props/params or adds logic (`select`, `enabled`, derived state, combining several queries).
+Define query options in the feature's `api/<feature>.queries.ts`. Do not create a hook that only forwards to `useQuery(xxxQueryOptions())`. Call `useQuery(accountsQueryOptions())` directly in each component. Create a custom hook only when it accepts props/params or adds logic (`select`, `enabled`, derived state, combining several queries).
 
 Good:
 
@@ -273,37 +284,17 @@ const useAccounts = () => {
 
 ## API Layer
 
-Shared HTTP clients and infrastructure belong in:
+Place API files as described in `SKILL.md`: the shared HTTP client in `src/shared/services/`, and feature services, queries, mutations, and actions flat in `src/features/<feature>/api/`.
 
-```txt
-src/shared/services/
-```
-
-Feature API modules belong in:
-
-```txt
-src/features/<feature>/api
-```
-
-Good:
-
-```txt
-src/shared/services/http-client.ts
-src/features/auth/api/auth.service.ts
-src/features/accounts/api/accounts.service.ts
-```
-
-Feature APIs should not duplicate base request logic.
+Feature APIs should not duplicate base request logic. Services are classes with static methods that call the shared client instance.
 
 Good:
 
 ```ts
 // src/shared/services/http-client.ts
-export class HttpClient extends ApiRequestService {
-  constructor() {
-    super();
-  }
-}
+export const HttpClient = new ApiRequestService({
+  baseURL: import.meta.env.VITE_API_URL,
+});
 
 // src/features/accounts/api/accounts.service.ts
 import { HttpClient } from "@/shared/services/http-client";
@@ -317,9 +308,33 @@ export class AccountsService {
     return HttpClient.get<Account>(`/accounts/${id}`);
   }
 }
+
+// src/features/accounts/api/accounts.queries.ts
+import { queryOptions } from "@tanstack/react-query";
+import { AccountsService } from "@/features/accounts/api/accounts.service";
+
+export const accountsKeys = {
+  all: ["accounts"] as const,
+  detail: (id: string) => ["accounts", id] as const,
+};
+
+export const accountsQueryOptions = () =>
+  queryOptions({
+    queryKey: accountsKeys.all,
+    queryFn: () => AccountsService.getAll(),
+  });
+
+// src/features/accounts/api/accounts.mutations.ts
+import { mutationOptions } from "@tanstack/react-query";
+import { AccountsService } from "@/features/accounts/api/accounts.service";
+
+export const createAccountMutationOptions = () =>
+  mutationOptions({
+    mutationFn: (values: CreateAccountValues) => AccountsService.create(values),
+  });
 ```
 
-Do not unwrap responses with `.then((res) => res.data)` in feature services. Response unwrapping lives in the shared `ApiRequestService` (`HttpClient`) when it is available; only unwrap in the feature module if the shared client returns the raw response.
+Do not unwrap responses with `.then((res) => res.data)` in feature services. Response unwrapping lives in the shared client when it is available; only unwrap in the feature module if the shared client returns the raw response.
 
 Bad:
 
@@ -359,7 +374,7 @@ Use `-` between words. Do not use camelCase or PascalCase for file or folder nam
 Good:
 
 ```txt
-use-login.tsx
+use-login.ts
 login-screen.tsx
 account-settings-form.tsx
 keyboard-insets.ts
@@ -378,21 +393,16 @@ HttpClient.ts
 
 This rule applies to filenames and directory names. TypeScript identifiers should still use the normal language conventions, such as `LoginScreen`, `useLogin`, and `formatDate`.
 
-Recommended:
+Name files by what they are:
 
-```txt
-login-screen.tsx
-login-form.tsx
-auth.service.ts
-auth.store.ts
-use-login.ts
-validation.ts or schemas.ts
-types.ts
-utils.ts
-constants.ts
-use-login.test.ts
-login-form.test.tsx
-```
+| Kind                              | Pattern                                 | Example                                    |
+| --------------------------------- | --------------------------------------- | ------------------------------------------ |
+| Components, pages, screens        | `<name>.tsx`                            | `login-form.tsx`, `login-screen.tsx`       |
+| Hooks                             | `use-<name>.ts`                         | `use-login.ts`                             |
+| Feature `api/`, `lib/`, `config/` | `<feature>.<kind>.ts`                   | `auth.service.ts`, `auth.validation.ts`    |
+| Stores and contexts               | `<name>.store.ts`, `<name>.context.tsx` | `auth.store.ts`, `onboarding.context.tsx`  |
+| Shared utilities and services     | `<name>.ts`                             | `format-date.ts`, `http-client.ts`         |
+| Tests                             | `<module>.test.ts(x)`                   | `use-login.test.ts`, `login-form.test.tsx` |
 
 Avoid vague names:
 
@@ -403,22 +413,24 @@ stuff.ts
 common.ts
 ```
 
-Use generic proper names like `<feature>.utils.ts` or `<feature>.types.ts` only inside a clear scope.
+Inside a feature, always prefix generic kinds with the feature name so the file is identifiable in search results and editor tabs.
 
 Good:
 
 ```txt
 src/features/auth/lib/auth.utils.ts
 src/features/auth/lib/auth.types.ts
-src/features/auth/config/auth.configs.ts
-src/features/auth/lib/auth.types.ts
+src/features/auth/config/auth.config.ts
 ```
 
-Bad
+Bad:
 
-```
+```txt
+# Missing the feature prefix.
 src/features/auth/lib/types.ts
+# Icons are static media and belong in assets/.
 src/features/auth/lib/auth-icons.ts
+# One helper per file. Put it in auth.utils.ts instead.
 src/features/auth/lib/format-name.ts
 ```
 
